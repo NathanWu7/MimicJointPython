@@ -90,7 +90,23 @@ def actuate(actuators, mimic_joints, actuated_dof, u_delta, u_act):
 
     return u_delta
     
+def mimic_clip(actuators, mimic_joints,actuated_dof, all_limits, action_limits):
+    # for action limits
+    unactuated_dof = len(actuators) - actuated_dof
 
+    all_limits[:,:actuated_dof] = action_limits[:,:actuated_dof]
+    for i in range(unactuated_dof):
+        #for actuators
+        all_limits[:,actuators[actuated_dof+i]["id"]-1] = action_limits[:,actuated_dof+i]
+
+        
+        #for mimic_joints
+        for item in mimic_joints:
+            if item.get("actuator") == actuators[actuated_dof+i]["name"]:
+                all_limits[:,item["id"]-1] = action_limits[:,actuated_dof+i] * item["multiplier"]  
+                if item["multiplier"] < 0:
+                    all_limits[[0,1],item["id"]-1]=all_limits[[1,0],item["id"]-1]
+    return all_limits
 
 if __name__ == "__main__":
     asset_root = "./assets"
