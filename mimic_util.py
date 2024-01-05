@@ -90,8 +90,33 @@ def actuate(actuators, mimic_joints, actuated_dof, u_delta, u_act):
 
     return u_delta
     
+def position_check(actuators, mimic_joints, actuated_dof, dof_pos):
+    # this function is used for close-loop control for adaptive gripper
+    # u_offset is the error between current_gripper_dof_pos and target_gripper_dof_pos 
+     
+    origin_pos = dof_pos.clone()
+    unactuated_dof = len(actuators) - actuated_dof
+    target_pos = dof_pos.clone()
+
+    for i in range(unactuated_dof):
+
+        #for actuators
+        
+        target_pos[:, actuators[actuated_dof+i]["id"]-1] = origin_pos[:, actuated_dof+i]
+        
+        #for mimic_joints
+        for item in mimic_joints:
+            if item.get("actuator") == actuators[actuated_dof+i]["name"]:
+                target_pos[:, item["id"]-1] = origin_pos[:, actuated_dof+i] * item["multiplier"] + item["offset"]
+
+    
+    u_offset = target_pos-origin_pos
+
+    return u_offset
+
 def mimic_clip(actuators, mimic_joints,actuated_dof, all_limits, action_limits):
-    # for action limits
+    #this function is used for setting limitations
+    
     unactuated_dof = len(actuators) - actuated_dof
 
     all_limits[:,:actuated_dof] = action_limits[:,:actuated_dof]
@@ -106,7 +131,7 @@ def mimic_clip(actuators, mimic_joints,actuated_dof, all_limits, action_limits):
                 all_limits[:,item["id"]-1] = action_limits[:,actuated_dof+i] * item["multiplier"]  
                 if item["multiplier"] < 0:
                     all_limits[[0,1],item["id"]-1]=all_limits[[1,0],item["id"]-1]
-    return all_limits
+    return all_limits    
 
 if __name__ == "__main__":
     asset_root = "./assets"
