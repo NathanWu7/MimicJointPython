@@ -1,4 +1,4 @@
-<img src="https://github.com/NathanWu7/MimicJointPython/main/assets/example_img.png" />
+<img src="https://github.com/NathanWu7/MimicJointPython/tree/main/assets/example_img.png" />
 
 1. Run the following code to install dependencies: </br>
    `pip install -r requirements.txt`
